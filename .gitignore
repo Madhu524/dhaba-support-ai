@@ -1,9 +1,7 @@
-.env
-.env.*
-!.env.example
-
-/storage/logs/*
-!/storage/logs/.gitkeep
-
 /vendor/
-/node_modules/
+.env
+storage/logs/*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
