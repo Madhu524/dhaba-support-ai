@@ -1,0 +1,24 @@
+{
+  "ticket_id": "T-1001",
+  "received_at": "2024-10-01T09:15:00Z",
+  "subject": "Charged twice for subscription",
+  "body": "Hi, I was charged twice this month for my annual subscription. I see two transactions of ₹4999 on my credit card statement dated September 28. Please refund the duplicate charge.",
+  "app_opens_since_renewal": 47,
+  "purchases": [
+    {
+      "purchase_id": "PUR-1001-A",
+      "purchase_type": "annual_subscription",
+      "amount_inr": 4999,
+      "status": "success",
+      "purchased_at": "2024-09-28T10:00:00Z"
+    },
+    {
+      "purchase_id": "PUR-1001-B",
+      "purchase_type": "annual_subscription",
+      "amount_inr": 4999,
+      "status": "success",
+      "purchased_at": "2024-09-28T10:03:00Z"
+    }
+  ]
+}
+

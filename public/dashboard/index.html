@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhaba Support AI — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --sidebar-w: 240px;
+  --navy: #0f172a;
+  --navy-hover: #1e293b;
+  --navy-active: #334155;
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.05);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,.12);
+}
+html, body { height: 100%; font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 14px; color: var(--text); background: var(--bg); }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+
+/* ═══════════════════════════════════════════════════════════
+   LOGIN PAGE
+═══════════════════════════════════════════════════════════ */
+#login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+}
+.login-box {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+.login-logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.login-logo h1 { font-size: 28px; font-weight: 800; color: var(--navy); }
+.login-logo p  { color: var(--text-muted); margin-top: 4px; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+.form-group input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 14px; transition: border-color .2s;
+}
+.form-group input:focus { outline: none; border-color: var(--accent); }
+.login-shortcuts { display: flex; gap: 8px; margin-bottom: 18px; }
+.login-shortcuts button {
+  flex: 1; padding: 8px; border-radius: 6px;
+  border: 1.5px solid var(--border); background: var(--bg);
+  font-size: 12px; font-weight: 600; color: var(--text-muted); transition: all .15s;
+}
+.login-shortcuts button:hover { border-color: var(--accent); color: var(--accent); }
+.btn-primary {
+  width: 100%; padding: 13px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 8px;
+  font-size: 15px; font-weight: 700; transition: background .2s;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.login-error { color: var(--danger); font-size: 13px; text-align: center; margin-top: 12px; display: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   APP LAYOUT
+═══════════════════════════════════════════════════════════ */
+#app { display: none; height: 100vh; }
+.layout { display: flex; height: 100%; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w);
+  background: var(--navy); display: flex; flex-direction: column;
+  color: #e2e8f0; overflow-y: auto;
+}
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-brand h2 { font-size: 20px; font-weight: 800; color: #fff; }
+.sidebar-brand p  { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+.sidebar-section { padding: 12px 0; }
+.sidebar-section-label {
+  padding: 0 20px 6px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: rgba(255,255,255,.3);
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; border-radius: 0;
+  color: rgba(255,255,255,.65); font-size: 13.5px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: var(--navy-hover); color: #fff; }
+.nav-item.active { background: var(--navy-active); color: #fff; border-left-color: var(--accent); }
+.nav-item .icon { width: 18px; text-align: center; opacity: .8; }
+.sidebar-footer {
+  margin-top: auto; padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.user-info { display: flex; align-items: center; gap: 10px; }
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); display: flex; align-items: center;
+  justify-content: center; font-weight: 700; color: #fff; font-size: 13px;
+}
+.user-name { font-size: 13px; font-weight: 600; color: #fff; }
+.user-role { font-size: 11px; color: rgba(255,255,255,.4); }
+.logout-btn {
+  background: none; border: none; color: rgba(255,255,255,.4);
+  font-size: 12px; margin-top: 8px; padding: 0; text-decoration: underline;
+}
+.logout-btn:hover { color: var(--danger); }
+
+/* ── Main ── */
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.topbar {
+  padding: 18px 28px; background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 20px; font-weight: 700; }
+.topbar-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.content { padding: 28px; flex: 1; }
+
+/* ═══════════════════════════════════════════════════════════
+   CARDS & STATS
+═══════════════════════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px; margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow);
+  border-left: 4px solid var(--accent);
+}
+.stat-card.danger { border-left-color: var(--danger); }
+.stat-card.warning { border-left-color: var(--warning); }
+.stat-card.success { border-left-color: var(--success); }
+.stat-card.info { border-left-color: var(--info); }
+.stat-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.stat-value { font-size: 32px; font-weight: 800; margin: 4px 0 2px; }
+.stat-sub { font-size: 12px; color: var(--text-muted); }
+
+.card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); margin-bottom: 24px;
+}
+.card-header {
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-title { font-size: 16px; font-weight: 700; }
+.card-body { padding: 22px; }
+
+/* ═══════════════════════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════════════════════ */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.chart-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+.chart-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+.chart-wrap { position: relative; height: 200px; }
+
+/* ═══════════════════════════════════════════════════════════
+   TABLES
+═══════════════════════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #f8fafc; text-align: left; padding: 12px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 1.5px solid var(--border); white-space: nowrap; }
+td { padding: 13px 14px; border-bottom: 1px solid var(--border); font-size: 13.5px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f8fafc; }
+
+/* ═══════════════════════════════════════════════════════════
+   BADGES
+═══════════════════════════════════════════════════════════ */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 30px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .02em;
+}
+.badge-billing    { background: #ede9fe; color: #6d28d9; }
+.badge-cancellation { background: #fee2e2; color: #b91c1c; }
+.badge-technical  { background: #dbeafe; color: #1d4ed8; }
+.badge-account    { background: #fef3c7; color: #92400e; }
+.badge-feature_request { background: #d1fae5; color: #065f46; }
+.badge-complaint  { background: #fce7f3; color: #9d174d; }
+.badge-general    { background: #f1f5f9; color: #475569; }
+
+.badge-low      { background: #d1fae5; color: #065f46; }
+.badge-medium   { background: #fef3c7; color: #92400e; }
+.badge-high     { background: #fee2e2; color: #b91c1c; }
+.badge-critical { background: #7f1d1d; color: #fef2f2; }
+
+.badge-new       { background: #ede9fe; color: #5b21b6; }
+.badge-triaged   { background: #dbeafe; color: #1d4ed8; }
+.badge-in_review { background: #fef3c7; color: #92400e; }
+.badge-resolved  { background: #d1fae5; color: #065f46; }
+.badge-closed    { background: #f1f5f9; color: #475569; }
+
+.badge-pending  { background: #fef3c7; color: #92400e; }
+.badge-approved { background: #d1fae5; color: #065f46; }
+.badge-rejected { background: #fee2e2; color: #b91c1c; }
+
+.badge-success  { background: #d1fae5; color: #065f46; }
+.badge-failed   { background: #fee2e2; color: #b91c1c; }
+.badge-initiated { background: #fef3c7; color: #92400e; }
+.badge-refunded { background: #ede9fe; color: #6d28d9; }
+
+.human-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.human-yes { background: #fef3c7; color: #92400e; }
+.human-no  { background: #f1f5f9; color: #475569; }
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 7px;
+  font-size: 13px; font-weight: 600; border: none; transition: all .15s;
+}
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-accent  { background: var(--accent);  color: #fff; }
+.btn-accent:hover  { background: var(--accent-hover); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #059669; }
+.btn-danger  { background: var(--danger);  color: #fff; }
+.btn-danger:hover  { background: #dc2626; }
+.btn-warning { background: var(--warning); color: #fff; }
+.btn-warning:hover { background: #d97706; }
+.btn-ghost   { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-info    { background: var(--info); color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════
+   FILTERS
+═══════════════════════════════════════════════════════════ */
+.filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.filters input, .filters select {
+  padding: 8px 12px; border-radius: 7px;
+  border: 1.5px solid var(--border); font-size: 13px;
+  background: #fff; transition: border-color .2s;
+}
+.filters input:focus, .filters select:focus { outline: none; border-color: var(--accent); }
+
+/* ═══════════════════════════════════════════════════════════
+   TICKET DETAIL
+═══════════════════════════════════════════════════════════ */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.detail-section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+.detail-section-full { grid-column: 1 / -1; }
+.detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.detail-row:last-child { border-bottom: none; }
+.detail-key   { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; min-width: 140px; }
+.detail-value { font-size: 14px; text-align: right; }
+.reply-draft-box {
+  background: #f8fafc; border-radius: 8px; border: 1px solid var(--border);
+  padding: 16px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap;
+  min-height: 140px; font-family: inherit;
+}
+textarea.reply-draft-box { width: 100%; resize: vertical; }
+.ticket-body-box {
+  background: #fffbeb; border-radius: 8px; border: 1px solid #fde68a;
+  padding: 16px; font-size: 13.5px; line-height: 1.7; white-space: pre-wrap;
+}
+.injection-alert {
+  background: #fef2f2; border: 1.5px solid #fecaca;
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px; color: #7f1d1d; font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; padding: 32px;
+  width: 500px; max-width: 95vw; box-shadow: var(--shadow-lg);
+}
+.modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING / EMPTY / ERROR STATES
+═══════════════════════════════════════════════════════════ */
+.loading-row td { text-align: center; padding: 48px; color: var(--text-muted); }
+.empty-state { text-align: center; padding: 56px; color: var(--text-muted); }
+.empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; }
+.error-banner {
+  background: #fef2f2; border: 1px solid #fecaca;
+  border-radius: 8px; padding: 12px 16px; color: #7f1d1d;
+  margin-bottom: 16px; font-size: 13px; display: none;
+}
+.success-banner {
+  background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: 8px; padding: 12px 16px; color: #14532d;
+  margin-bottom: 16px; font-size: 13px; display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MISC
+═══════════════════════════════════════════════════════════ */
+.page { display: none; }
+.page.active { display: block; }
+.confidence-bar { display: flex; align-items: center; gap: 8px; }
+.confidence-track { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+.confidence-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width .3s; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #ede9fe; color: #5b21b6; }
+.refund-amount { font-weight: 700; color: var(--danger); }
+
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .charts-row { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═════════════════════════════════════════════════════════
+     LOGIN PAGE
+════════════════════════════════════════════════════════════ -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>🍜 Dhaba Support AI</h1>
+      <p>Intelligent Customer Support Triage</p>
+    </div>
+    <div class="login-shortcuts">
+      <button onclick="fillCreds('admin@dhaba.ai','Admin@1234')">👤 Admin Login</button>
+      <button onclick="fillCreds('agent@dhaba.ai','Agent@1234')">🎧 Agent Login</button>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" value="admin@dhaba.ai">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" value="Admin@1234">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════
+     APP
+════════════════════════════════════════════════════════════ -->
+<div id="app">
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <h2>🍜 Dhaba</h2>
+        <p>Support AI Dashboard</p>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span> Dashboard</div>
+        <div class="nav-item" onclick="showPage('tickets')"><span class="icon">🎫</span> Ticket Queue</div>
+        <div class="nav-item" onclick="showPage('refunds')"><span class="icon">💰</span> Refund Management</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Analytics</div>
+        <div class="nav-item" onclick="showPage('reports')"><span class="icon">📈</span> Reports</div>
+        <div class="nav-item" onclick="showPage('audit')"><span class="icon">🔍</span> Audit Events</div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">A</div>
+          <div>
+            <div class="user-name" id="user-name">Loading…</div>
+            <div class="user-role" id="user-role">…</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Sign out</button>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="page-title">Dashboard</div>
+          <div class="topbar-subtitle" id="page-subtitle">Overview of support operations</div>
+        </div>
+        <div>
+          <button class="btn btn-accent btn-sm" onclick="showPage('tickets')">+ New Ticket</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- ── DASHBOARD PAGE ── -->
+        <div id="page-dashboard" class="page active">
+          <div class="stats-grid" id="stats-grid">
+            <div class="stat-card"><div class="stat-label">Total Tickets</div><div class="stat-value" id="s-total">—</div></div>
+            <div class="stat-card warning"><div class="stat-label">Pending</div><div class="stat-value" id="s-pending">—</div></div>
+            <div class="stat-card info"><div class="stat-label">Human Review</div><div class="stat-value" id="s-human">—</div></div>
+            <div class="stat-card danger"><div class="stat-label">High Severity</div><div class="stat-value" id="s-high">—</div></div>
+            <div class="stat-card warning"><div class="stat-label">Pending Refunds</div><div class="stat-value" id="s-refunds">—</div></div>
+            <div class="stat-card danger"><div class="stat-label">Injection Attempts</div><div class="stat-value" id="s-inject">—</div></div>
+          </div>
+
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-title">Tickets by Category</div>
+              <div class="chart-wrap"><canvas id="cat-chart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Tickets by Severity</div>
+              <div class="chart-wrap"><canvas id="sev-chart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Tickets</div>
+              <button class="btn btn-ghost btn-sm" onclick="showPage('tickets')">View All</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table id="recent-table">
+                  <thead><tr><th>Ticket ID</th><th>Subject</th><th>Category</th><th>Severity</th><th>Status</th><th>Human Review</th></tr></thead>
+                  <tbody id="recent-tbody"><tr class="loading-row"><td colspan="6">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TICKETS PAGE ── -->
+        <div id="page-tickets" class="page">
+          <div class="filters">
+            <input type="text" id="t-search" placeholder="🔍 Search tickets…" oninput="filterTickets()">
+            <select id="t-status" onchange="filterTickets()">
+              <option value="">All Statuses</option>
+              <option>new</option><option>triaged</option>
+              <option>in_review</option><option>resolved</option><option>closed</option>
+            </select>
+            <button class="btn btn-accent btn-sm" onclick="openImportModal()">⬆ Import Ticket JSON</button>
+            <button class="btn btn-ghost btn-sm" onclick="runReplayAll()">▶ Replay All 12</button>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Ticket ID</th><th>Subject</th><th>Category</th><th>Severity</th><th>Status</th><th>Date</th><th>Human</th><th>Actions</th></tr></thead>
+                  <tbody id="tickets-tbody"><tr class="loading-row"><td colspan="8">Loading tickets…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div id="tickets-pagination" style="display:flex;gap:8px;justify-content:center;padding:16px"></div>
+        </div>
+
+        <!-- ── TICKET DETAIL PAGE ── -->
+        <div id="page-ticket-detail" class="page">
+          <div style="margin-bottom:16px">
+            <button class="btn btn-ghost btn-sm" onclick="showPage('tickets')">← Back to Queue</button>
+          </div>
+          <div id="injection-alert" class="injection-alert" style="display:none">
+            🚨 <strong>Prompt Injection Detected</strong> — Instructions in this ticket have been blocked. The system behaviour was not affected. Human review has been assigned.
+          </div>
+          <div class="detail-grid">
+            <div class="detail-section">
+              <div class="card-header"><div class="card-title">Ticket Information</div></div>
+              <div class="card-body" id="ticket-info"></div>
+            </div>
+            <div class="detail-section">
+              <div class="card-header"><div class="card-title">Triage Result</div></div>
+              <div class="card-body" id="triage-info"></div>
+            </div>
+            <div class="detail-section">
+              <div class="card-header"><div class="card-title">Purchase History</div></div>
+              <div class="card-body" id="purchase-info"></div>
+            </div>
+            <div class="detail-section">
+              <div class="card-header"><div class="card-title">Refund Recommendation</div></div>
+              <div class="card-body" id="refund-info"></div>
+            </div>
+            <div class="detail-section detail-section-full">
+              <div class="card-header">
+                <div class="card-title">Customer Message</div>
+              </div>
+              <div class="card-body"><div id="ticket-body-display" class="ticket-body-box"></div></div>
+            </div>
+            <div class="detail-section detail-section-full">
+              <div class="card-header">
+                <div class="card-title">AI-Drafted Reply</div>
+                <button class="btn btn-ghost btn-sm" id="edit-reply-btn" onclick="toggleReplyEdit()">✏ Edit</button>
+              </div>
+              <div class="card-body">
+                <div id="reply-display" class="reply-draft-box"></div>
+                <textarea id="reply-edit" class="reply-draft-box" style="display:none"></textarea>
+                <div style="display:flex;gap:8px;margin-top:12px" id="reply-actions">
+                  <button class="btn btn-accent btn-sm" onclick="triggerTriage(currentTicketId)" id="triage-btn">🔄 Re-triage</button>
+                  <button class="btn btn-success btn-sm" id="approve-refund-btn" onclick="approveCurrentRefund()" style="display:none">✓ Approve Refund</button>
+                  <button class="btn btn-danger btn-sm" id="reject-refund-btn" onclick="rejectCurrentRefund()" style="display:none">✗ Reject Refund</button>
+                  <button class="btn btn-warning btn-sm" onclick="escalate()">⬆ Escalate</button>
+                  <button class="btn btn-ghost btn-sm" id="save-reply-btn" onclick="saveReply()" style="display:none">💾 Save Reply</button>
+                </div>
+                <div id="detail-msg" style="margin-top:10px;font-size:13px;color:var(--success);display:none"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── REFUNDS PAGE ── -->
+        <div id="page-refunds" class="page">
+          <div class="filters">
+            <select id="r-status" onchange="loadRefunds()">
+              <option value="">All</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Refund ID</th><th>Ticket</th><th>Purchase ID</th><th>Requested</th><th>Approved</th><th>Status</th><th>Reason</th><th>Reviewed By</th><th>Actions</th></tr></thead>
+                  <tbody id="refunds-tbody"><tr class="loading-row"><td colspan="9">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── REPORTS PAGE ── -->
+        <div id="page-reports" class="page">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Triage Report — All 12 Tickets</div>
+              <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Export JSON</button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Ticket ID</th><th>Subject</th><th>Category</th><th>Severity</th><th>Refund Rec.</th><th>Amount</th><th>Human</th><th>Confidence</th><th>Injection</th></tr></thead>
+                  <tbody id="report-tbody"><tr class="loading-row"><td colspan="9">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── AUDIT PAGE ── -->
+        <div id="page-audit" class="page">
+          <div class="filters">
+            <select id="audit-type" onchange="loadAudit()">
+              <option value="">All Event Types</option>
+              <option value="ticket_triaged">ticket_triaged</option>
+              <option value="injection_detected">injection_detected</option>
+              <option value="refund_approved">refund_approved</option>
+              <option value="refund_rejected">refund_rejected</option>
+            </select>
+          </div>
+          <div class="card">
+            <div class="card-body" style="padding:0">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>ID</th><th>Ticket</th><th>Actor</th><th>Event Type</th><th>Data</th><th>Time</th></tr></thead>
+                  <tbody id="audit-tbody"><tr class="loading-row"><td colspan="6">Loading…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- ═════════════════════════════════════════════════════════
+     IMPORT MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="import-modal" class="modal-overlay">
+  <div class="modal">
+    <h3>Import Ticket</h3>
+    <div class="form-group">
+      <label>Ticket JSON</label>
+      <textarea id="import-json" rows="10" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;font-family:monospace;font-size:12px" placeholder='{"ticket_id":"T-9001","subject":"...","body":"...","purchases":[]}'></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('import-modal')">Cancel</button>
+      <button class="btn btn-accent" onclick="importTicket()">Import & Triage</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>
+// ── Config ────────────────────────────────────────────────
+const BASE = (() => {
+  const s = window.location.pathname;
+  const m = s.match(/^(.*?)\/public\//);
+  return m ? m[1] + '/public' : '';
+})();
+
+let TOKEN = localStorage.getItem('dhaba_token') || '';
+let CURRENT_USER = JSON.parse(localStorage.getItem('dhaba_user') || 'null');
+let currentTicketId = null;
+let currentRefundId = null;
+let catChart = null, sevChart = null;
+let ticketsPage = 1;
+
+// ── Helpers ───────────────────────────────────────────────
+const api = async (path, options = {}) => {
+  const headers = { 'Content-Type': 'application/json' };
+  if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+  const r = await fetch(BASE + path, { headers, ...options });
+  const data = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, data };
+};
+
+const badge = (cls, text) => `<span class="badge badge-${cls}">${text}</span>`;
+const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+const fmtCurrency = n => n > 0 ? '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits:2 }) : '—';
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// ── Auth ──────────────────────────────────────────────────
+function fillCreds(e, p) {
+  document.getElementById('login-email').value = e;
+  document.getElementById('login-pass').value  = p;
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  const { ok, data } = await api('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password: pass })
+  });
+
+  if (!ok || !data.success) {
+    errEl.textContent = data.error || 'Login failed.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  TOKEN = data.token;
+  CURRENT_USER = data.user;
+  localStorage.setItem('dhaba_token', TOKEN);
+  localStorage.setItem('dhaba_user', JSON.stringify(CURRENT_USER));
+  bootApp();
+}
+
+async function doLogout() {
+  await api('/api/auth/logout', { method: 'POST' });
+  TOKEN = ''; CURRENT_USER = null;
+  localStorage.removeItem('dhaba_token');
+  localStorage.removeItem('dhaba_user');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+}
+
+// ── App Boot ──────────────────────────────────────────────
+function bootApp() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('user-name').textContent = CURRENT_USER?.name || '—';
+  document.getElementById('user-role').textContent = CURRENT_USER?.role || '—';
+  document.getElementById('user-avatar').textContent = (CURRENT_USER?.name || 'U')[0].toUpperCase();
+  loadDashboard();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (TOKEN && CURRENT_USER) bootApp();
+});
+
+// ── Navigation ────────────────────────────────────────────
+const pageTitles = {
+  dashboard: ['Dashboard', 'Overview of support operations'],
+  tickets:   ['Ticket Queue', 'All customer support tickets'],
+  'ticket-detail': ['Ticket Details', 'Full ticket triage and actions'],
+  refunds:   ['Refund Management', 'Pending and processed refund requests'],
+  reports:   ['Reports', 'Triage and refund analytics'],
+  audit:     ['Audit Events', 'Security-sensitive event log'],
+};
+
+function showPage(name, extra = '') {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+
+  const navItem = [...document.querySelectorAll('.nav-item')].find(n => n.getAttribute('onclick')?.includes("'"+name+"'"));
+  if (navItem) navItem.classList.add('active');
+
+  const [title, sub] = pageTitles[name] || [name, ''];
+  document.getElementById('page-title').textContent    = title + (extra ? ' — ' + extra : '');
+  document.getElementById('page-subtitle').textContent = sub;
+
+  // Lazy load
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'tickets')   loadTickets();
+  if (name === 'refunds')   loadRefunds();
+  if (name === 'reports')   loadReports();
+  if (name === 'audit')     loadAudit();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+async function loadDashboard() {
+  const [sum, cat, sev, recent] = await Promise.all([
+    api('/api/dashboard/summary'),
+    api('/api/dashboard/tickets-by-category'),
+    api('/api/dashboard/tickets-by-severity'),
+    api('/api/dashboard/recent-tickets?limit=10'),
+  ]);
+
+  if (sum.ok && sum.data.data) {
+    const d = sum.data.data;
+    document.getElementById('s-total').textContent   = d.total_tickets;
+    document.getElementById('s-pending').textContent = d.pending_tickets;
+    document.getElementById('s-human').textContent   = d.human_review;
+    document.getElementById('s-high').textContent    = d.high_severity;
+    document.getElementById('s-refunds').textContent = d.pending_refunds;
+    document.getElementById('s-inject').textContent  = d.injection_attempts;
+  }
+
+  if (cat.ok) renderCatChart(cat.data.data || []);
+  if (sev.ok) renderSevChart(sev.data.data || []);
+  if (recent.ok) renderRecentTable(recent.data.data || []);
+}
+
+function renderCatChart(rows) {
+  const ctx = document.getElementById('cat-chart').getContext('2d');
+  if (catChart) catChart.destroy();
+  catChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: rows.map(r => r.category),
+      datasets: [{ data: rows.map(r => r.count),
+        backgroundColor: ['#6366f1','#ef4444','#3b82f6','#f59e0b','#10b981','#ec4899','#94a3b8'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+  });
+}
+
+function renderSevChart(rows) {
+  const ctx = document.getElementById('sev-chart').getContext('2d');
+  if (sevChart) sevChart.destroy();
+  const colors = { critical:'#7f1d1d', high:'#ef4444', medium:'#f59e0b', low:'#10b981' };
+  sevChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.map(r => r.severity),
+      datasets: [{ data: rows.map(r => r.count), backgroundColor: rows.map(r => colors[r.severity] || '#94a3b8') }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+
+function renderRecentTable(rows) {
+  const tbody = document.getElementById('recent-tbody');
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">No tickets yet</td></tr>'; return; }
+  tbody.innerHTML = rows.map(r => `
+    <tr onclick="openTicket('${r.ticket_id}')" style="cursor:pointer">
+      <td><strong>${esc(r.ticket_id)}</strong></td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.subject)}</td>
+      <td>${r.category ? badge(r.category, r.category) : '—'}</td>
+      <td>${r.severity ? badge(r.severity, r.severity) : '—'}</td>
+      <td>${badge(r.status, r.status)}</td>
+      <td><span class="human-badge ${r.needs_human ? 'human-yes' : 'human-no'}">${r.needs_human ? '👤 Yes' : 'No'}</span></td>
+    </tr>`).join('');
+}
+
+// ── TICKETS ───────────────────────────────────────────────
+async function loadTickets(page = 1) {
+  ticketsPage = page;
+  const status = document.getElementById('t-status')?.value || '';
+  const search = document.getElementById('t-search')?.value || '';
+  const { ok, data } = await api(`/api/tickets?page=${page}&per_page=15&status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}`);
+  if (!ok) return;
+
+  const d = data.data;
+  const tbody = document.getElementById('tickets-tbody');
+  if (!d.tickets.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:48px;color:var(--text-muted)">No tickets found</td></tr>'; return; }
+
+  // Fetch triage data for status enrichment
+  const triageRows = {};
+
+  tbody.innerHTML = d.tickets.map(t => `
+    <tr onclick="openTicket('${t.ticket_id}')" style="cursor:pointer">
+      <td><strong>${esc(t.ticket_id)}</strong></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.subject)}</td>
+      <td>—</td><td>—</td>
+      <td>${badge(t.status, t.status)}</td>
+      <td>${fmtDate(t.received_at)}</td>
+      <td>—</td>
+      <td onclick="event.stopPropagation()">
+        <button class="btn btn-accent btn-sm" onclick="triggerTriage('${t.ticket_id}')">▶ Triage</button>
+      </td>
+    </tr>`).join('');
+
+  // Pagination
+  const pag = document.getElementById('tickets-pagination');
+  pag.innerHTML = '';
+  for (let i = 1; i <= d.last_page; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm ' + (i === page ? 'btn-accent' : 'btn-ghost');
+    btn.textContent = i;
+    btn.onclick = () => loadTickets(i);
+    pag.appendChild(btn);
+  }
+}
+
+function filterTickets() { loadTickets(1); }
+
+async function triggerTriage(ticketId) {
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  const { ok, data } = await api(`/api/tickets/${ticketId}/triage`, { method: 'POST' });
+  if (btn) { btn.disabled = false; btn.textContent = '▶ Triage'; }
+  if (ok) {
+    showMsg('Triage complete for ' + ticketId);
+    if (currentTicketId === ticketId) openTicket(ticketId);
+    loadTickets(ticketsPage);
+  } else {
+    alert('Triage failed: ' + (data.error || 'Unknown error'));
+  }
+}
+
+function showMsg(msg) {
+  const el = document.getElementById('detail-msg');
+  if (el) { el.textContent = msg; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
+}
+
+// ── TICKET DETAIL ─────────────────────────────────────────
+async function openTicket(ticketId) {
+  currentTicketId = ticketId;
+  showPage('ticket-detail', ticketId);
+
+  const { ok, data } = await api(`/api/tickets/${ticketId}`);
+  if (!ok) return;
+
+  const t  = data.ticket;
+  const tr = data.triage;
+  const ps = data.purchases || [];
+
+  // Injection alert
+  const injAlert = document.getElementById('injection-alert');
+  injAlert.style.display = tr?.injection_detected == 1 ? 'flex' : 'none';
+
+  // Ticket info
+  document.getElementById('ticket-info').innerHTML = `
+    <div class="detail-row"><span class="detail-key">Ticket ID</span><span class="detail-value"><strong>${esc(t.ticket_id)}</strong></span></div>
+    <div class="detail-row"><span class="detail-key">Status</span><span class="detail-value">${badge(t.status, t.status)}</span></div>
+    <div class="detail-row"><span class="detail-key">Subject</span><span class="detail-value">${esc(t.subject)}</span></div>
+    <div class="detail-row"><span class="detail-key">Received</span><span class="detail-value">${fmtDate(t.received_at)}</span></div>
+    <div class="detail-row"><span class="detail-key">App Opens</span><span class="detail-value">${t.app_opens_since_renewal}</span></div>`;
+
+  // Triage info
+  document.getElementById('triage-info').innerHTML = tr ? `
+    <div class="detail-row"><span class="detail-key">Category</span><span class="detail-value">${badge(tr.category, tr.category)}</span></div>
+    <div class="detail-row"><span class="detail-key">Severity</span><span class="detail-value">${badge(tr.severity, tr.severity)}</span></div>
+    <div class="detail-row"><span class="detail-key">Human Review</span><span class="detail-value"><span class="human-badge ${tr.needs_human ? 'human-yes' : 'human-no'}">${tr.needs_human ? '👤 Required' : 'Not Required'}</span></span></div>
+    <div class="detail-row"><span class="detail-key">Confidence</span><span class="detail-value">
+      <div class="confidence-bar"><div class="confidence-track"><div class="confidence-fill" style="width:${(tr.confidence*100).toFixed(0)}%"></div></div>${(tr.confidence*100).toFixed(0)}%</div>
+    </span></div>
+    <div class="detail-row"><span class="detail-key">Provider</span><span class="detail-value"><span class="tag">${esc(tr.model_provider)}</span></span></div>
+    <div class="detail-row"><span class="detail-key">Triaged At</span><span class="detail-value">${fmtDate(tr.created_at)}</span></div>` :
+    '<div style="color:var(--text-muted);padding:16px">Not yet triaged. Click "Re-triage" to analyse.</div>';
+
+  // Purchases
+  document.getElementById('purchase-info').innerHTML = ps.length ? ps.map(p => `
+    <div class="detail-row">
+      <span class="detail-key">${esc(p.purchase_id)}</span>
+      <span class="detail-value">
+        ${fmtCurrency(p.amount_inr)} ${badge(p.status, p.status)}<br>
+        <small style="color:var(--text-muted)">${esc(p.purchase_type)} — ${fmtDate(p.purchased_at)}</small>
+      </span>
+    </div>`).join('') : '<div style="color:var(--text-muted)">No purchase records.</div>';
+
+  // Refund info
+  const refundRec = tr?.refund_recommended == 1;
+  const refundAmt = parseFloat(tr?.refund_amount_inr || 0);
+  document.getElementById('refund-info').innerHTML = tr ? `
+    <div class="detail-row"><span class="detail-key">Recommended</span><span class="detail-value">${refundRec ? '<strong style="color:var(--danger)">Yes</strong>' : 'No'}</span></div>
+    <div class="detail-row"><span class="detail-key">Amount</span><span class="detail-value">${refundRec ? '<span class="refund-amount">'+fmtCurrency(refundAmt)+'</span>' : '—'}</span></div>
+    <div class="detail-row"><span class="detail-key">Reason</span><span class="detail-value" style="text-align:left;font-size:12px;max-width:220px">${esc(tr.refund_reason || '—')}</span></div>` :
+    '<div style="color:var(--text-muted)">No triage yet.</div>';
+
+  // Customer message
+  document.getElementById('ticket-body-display').textContent = t.body;
+
+  // Reply draft
+  const replyText = tr?.reply_draft || 'No reply draft yet. Click "Re-triage" to generate.';
+  document.getElementById('reply-display').textContent = replyText;
+  document.getElementById('reply-edit').value           = replyText;
+
+  // Show refund action buttons if admin
+  const isAdmin = CURRENT_USER?.role === 'admin';
+  if (isAdmin && refundRec) {
+    // Check for pending refund
+    const { ok: rOk, data: rData } = await api('/api/refunds?status=pending');
+    if (rOk) {
+      const pending = (rData.refunds || []).find(r => r.ticket_id === ticketId);
+      currentRefundId = pending?.id || null;
+      document.getElementById('approve-refund-btn').style.display = pending ? 'inline-flex' : 'none';
+      document.getElementById('reject-refund-btn').style.display  = pending ? 'inline-flex' : 'none';
+    }
+  }
+}
+
+function toggleReplyEdit() {
+  const disp = document.getElementById('reply-display');
+  const edit = document.getElementById('reply-edit');
+  const btn  = document.getElementById('edit-reply-btn');
+  const save = document.getElementById('save-reply-btn');
+  const editing = disp.style.display !== 'none';
+  disp.style.display = editing ? 'none' : 'block';
+  edit.style.display = editing ? 'block' : 'none';
+  btn.textContent    = editing ? '✏ Edit' : '👁 View';
+  save.style.display = editing ? 'inline-flex' : 'none';
+}
+
+function saveReply() {
+  const text = document.getElementById('reply-edit').value;
+  document.getElementById('reply-display').textContent = text;
+  toggleReplyEdit();
+  showMsg('Reply saved locally (note: drafts are stored in the triage record).');
+}
+
+function escalate() {
+  showMsg('Ticket escalated to senior agent.');
+}
+
+async function approveCurrentRefund() {
+  if (!currentRefundId) return;
+  if (!confirm('Approve this refund recommendation? (No payment will be processed — this creates a record for the billing team.)')) return;
+  const { ok, data } = await api(`/api/refunds/${currentRefundId}/approve`, { method: 'POST' });
+  if (ok) { showMsg('Refund approved.'); openTicket(currentTicketId); }
+  else alert('Error: ' + (data.error || ''));
+}
+
+async function rejectCurrentRefund() {
+  if (!currentRefundId) return;
+  const { ok, data } = await api(`/api/refunds/${currentRefundId}/reject`, { method: 'POST' });
+  if (ok) { showMsg('Refund rejected.'); openTicket(currentTicketId); }
+  else alert('Error: ' + (data.error || ''));
+}
+
+// ── REFUNDS ───────────────────────────────────────────────
+async function loadRefunds() {
+  const status = document.getElementById('r-status')?.value || '';
+  const { ok, data } = await api(`/api/refunds${status ? '?status=' + status : ''}`);
+  const tbody = document.getElementById('refunds-tbody');
+  if (!ok || !data.refunds?.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:48px;color:var(--text-muted)">No refunds found</td></tr>';
+    return;
+  }
+  const isAdmin = CURRENT_USER?.role === 'admin';
+  tbody.innerHTML = data.refunds.map(r => `
+    <tr>
+      <td>#${r.id}</td>
+      <td><a onclick="openTicket('${r.ticket_id}')" style="cursor:pointer;color:var(--accent)">${esc(r.ticket_id)}</a></td>
+      <td style="font-size:12px">${esc(r.purchase_id)}</td>
+      <td>${fmtCurrency(r.requested_amount_inr)}</td>
+      <td>${r.approved_amount_inr ? fmtCurrency(r.approved_amount_inr) : '—'}</td>
+      <td>${badge(r.status, r.status)}</td>
+      <td style="max-width:200px;font-size:12px">${esc(r.reason)}</td>
+      <td>${r.reviewer_name || '—'}</td>
+      <td>
+        ${isAdmin && r.status === 'pending' ? `
+          <button class="btn btn-success btn-sm" onclick="approveRefund(${r.id})">✓</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectRefund(${r.id})">✗</button>` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function approveRefund(id) {
+  if (!confirm('Approve refund #' + id + '?')) return;
+  const { ok, data } = await api(`/api/refunds/${id}/approve`, { method: 'POST' });
+  if (ok) loadRefunds(); else alert(data.error || 'Error');
+}
+
+async function rejectRefund(id) {
+  if (!confirm('Reject refund #' + id + '?')) return;
+  const { ok, data } = await api(`/api/refunds/${id}/reject`, { method: 'POST' });
+  if (ok) loadRefunds(); else alert(data.error || 'Error');
+}
+
+// ── REPORTS ───────────────────────────────────────────────
+async function loadReports() {
+  const { ok, data } = await api('/api/reports/triage');
+  const tbody = document.getElementById('report-tbody');
+  if (!ok || !data.data?.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:48px;color:var(--text-muted)">No triage data yet. Run triage on tickets first.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.data.map(r => `
+    <tr onclick="openTicket('${r.ticket_id}')" style="cursor:pointer">
+      <td><strong>${esc(r.ticket_id)}</strong></td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px">${esc(r.subject)}</td>
+      <td>${badge(r.category, r.category)}</td>
+      <td>${badge(r.severity, r.severity)}</td>
+      <td>${r.refund_recommended ? '<strong style="color:var(--danger)">Yes</strong>' : 'No'}</td>
+      <td>${r.refund_recommended ? fmtCurrency(r.refund_amount_inr) : '—'}</td>
+      <td><span class="human-badge ${r.needs_human ? 'human-yes' : 'human-no'}">${r.needs_human ? '👤 Yes' : 'No'}</span></td>
+      <td>${(r.confidence * 100).toFixed(0)}%</td>
+      <td>${r.injection_detected ? '<span style="color:var(--danger);font-weight:700">⚠ Yes</span>' : 'No'}</td>
+    </tr>`).join('');
+}
+
+async function exportData() {
+  const { ok, data } = await api('/api/reports/export');
+  if (!ok) return;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dhaba-export-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+// ── AUDIT ────────────────────────────────────────────────
+async function loadAudit() {
+  const type = document.getElementById('audit-type')?.value || '';
+  const { ok, data } = await api(`/api/audit-events${type ? '?event_type=' + type : ''}`);
+  const tbody = document.getElementById('audit-tbody');
+  if (!ok || !data.events?.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text-muted)">No audit events yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.events.map(e => `
+    <tr>
+      <td>${e.id}</td>
+      <td>${e.ticket_id ? `<a onclick="openTicket('${e.ticket_id}')" style="cursor:pointer;color:var(--accent)">${esc(e.ticket_id)}</a>` : '—'}</td>
+      <td>${esc(e.actor_name || '—')}</td>
+      <td><span class="tag">${esc(e.event_type)}</span></td>
+      <td style="font-size:11px;max-width:200px;overflow:hidden">${e.event_data ? esc(JSON.stringify(JSON.parse(e.event_data), null, 0)) : '—'}</td>
+      <td>${fmtDate(e.created_at)}</td>
+    </tr>`).join('');
+}
+
+// ── IMPORT ────────────────────────────────────────────────
+function openImportModal() {
+  document.getElementById('import-modal').classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+async function importTicket() {
+  let payload;
+  try { payload = JSON.parse(document.getElementById('import-json').value); }
+  catch { alert('Invalid JSON'); return; }
+
+  const { ok, data } = await api('/triage', { method: 'POST', body: JSON.stringify(payload) });
+  if (ok) {
+    closeModal('import-modal');
+    alert('✅ Ticket triaged: ' + payload.ticket_id);
+    loadTickets();
+    loadDashboard();
+  } else {
+    alert('Error: ' + (data.error || JSON.stringify(data.errors || '')));
+  }
+}
+
+// ── REPLAY ALL 12 ─────────────────────────────────────────
+const TICKETS_JSON_URL = BASE + '/../database/dhaba_tickets.json';
+
+async function runReplayAll() {
+  if (!confirm('This will triage all 12 sample tickets. Continue?')) return;
+  let resp;
+  try { resp = await fetch(TICKETS_JSON_URL); } catch { alert('Cannot load fixture JSON'); return; }
+  const tickets = await resp.json();
+  let ok = 0, fail = 0;
+  for (const t of tickets) {
+    const { ok: success } = await api('/triage', { method: 'POST', body: JSON.stringify(t) });
+    if (success) ok++; else fail++;
+  }
+  alert(`Replay complete. ✅ ${ok} succeeded, ❌ ${fail} failed.`);
+  loadDashboard();
+  loadTickets();
+}
+</script>
+</body>
+</html>
+

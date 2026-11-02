@@ -1,0 +1,25 @@
+{
+    "name": "dhaba/support-ai",
+    "description": "Dhaba AI Support Triage System",
+    "type": "project",
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "files": [
+            "app/Helpers/functions.php"
+        ]
+    },
+    "scripts": {
+        "test": "php tests/run_tests.php",
+        "replay": "php tests/replay_tickets.php"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
+
